@@ -5,6 +5,15 @@
 
 #define APPNAME "Honda UNI   v1.0"
 
+// UNUSED
+// #define PIN_INJECTOR 2
+// #define PIN_INJECTOR 3
+// #define PIN_TH 18
+// #define PIN_TH 19
+// #define PIN_INJECTOR 9
+#define PIN_RX 10
+#define PIN_TX 11
+// #define PIN_DLC 12
 // OUT
 #define PIN_LOCK 4
 #define PIN_UNLOCK 5

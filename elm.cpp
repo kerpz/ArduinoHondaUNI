@@ -3,7 +3,7 @@
 
 #include "elm.h"
 
-SoftwareSerialWithHalfDuplex btSerial(10, 11); // RX, TX
+SoftwareSerialWithHalfDuplex btSerial(PIN_RX, PIN_TX); // RX, TX
 
 bool elm_mode;
 bool elm_memory;
