@@ -6,33 +6,33 @@
 SoftwareSerialWithHalfDuplex dlcSerial(PIN_DLC, PIN_DLC, false, false);
 
 // ecu data
-int rpm = 9000;
-int ect = 92;
-int iat = 60;
-int maps;
-int baro;
-uint8_t tps;
-int sft;
-int lft;
-int inj;
-int ign;
-int lmt;
-int iacv;
-int knoc;
-float volt;
-float o2;
-uint8_t vss = 200;
+int rpm = 0;
+int ect = 0;
+int iat = 0;
+int maps = 0;
+int baro = 0;
+uint8_t tps = 0;
+int sft = 0;
+int lft = 0;
+int inj = 0;
+int ign = 0;
+int lmt = 0;
+int iacv = 0;
+int knoc = 0;
+float volt = 0;
+float o2 = 0;
+uint8_t vss = 0;
 
-bool sw_aircon;
-bool sw_brake;
-bool sw_vtec;
+bool sw_aircon = false;
+bool sw_brake = false;
+bool sw_vtec = false;
 
 // extra sensor
-float volt2;
-float th;
-float afr;
-float fp;
-bool cp;
+float volt2 = 0;
+float th = 0;
+float afr = 0;
+float fp = 0;
+bool cp = 0;
 
 int rpmtop = 0;
 int volttop = 0;
@@ -400,18 +400,35 @@ float readFuelPressure()
 }
 // --- end extra sensors ---
 
+void pushPinHi(uint8_t pin, uint32_t delayms)
+{
+  digitalWrite(pin, HIGH);
+  delay(delayms);
+  digitalWrite(pin, LOW);
+}
+
 void appSetup()
 {
-  pinMode(PIN_AC, OUTPUT);     // Air Condition
   pinMode(PIN_BUZZER, OUTPUT); // Piezo Buzzer
+  // pinMode(PIN_AC, OUTPUT);     // Air Condition
 
   pinMode(PIN_DOOR, INPUT); // Door
+
   pinMode(PIN_VOLT, INPUT); // Volt meter
   pinMode(PIN_FP, INPUT);   // 100psi Fuel Pressure
   pinMode(PIN_AFR, INPUT);  // AEM UEGO AFR
   pinMode(PIN_TH, INPUT);   // 10k Thermistor
 
   dlcSerial.begin(9600);
+
+  // initial beep
+  for (int i = 0; i < 3; i++)
+  {
+    pushPinHi(PIN_BUZZER, 50); // beep 50ms
+    delay(80);
+  }
+
+  delay(100);
 }
 
 void appLoop()
@@ -421,7 +438,7 @@ void appLoop()
   { // run every 250 ms
     msTick = millis();
 
-    readEcuData();
+    // readEcuData();
 
     volt2 = readVoltage();
     fp = readFuelPressure();
@@ -479,6 +496,7 @@ void appLoop()
       digitalWrite(PIN_BUZZER, LOW);
 
     // aircon controller (replace the OEM one)
+    /*
     if (th <= th_threshold)
     {
       digitalWrite(PIN_AC, LOW);
@@ -489,6 +507,7 @@ void appLoop()
       digitalWrite(PIN_AC, HIGH);
       cp = 1;
     }
+    */
 
     // IMAP = RPM * MAP / IAT / 2
     // MAF = (IMAP/60)*(VE/100)*(Eng Disp)*(MMA)/(R)

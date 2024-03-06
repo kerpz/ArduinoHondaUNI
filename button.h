@@ -4,4 +4,7 @@
 #include "display.h"
 #include "app.h"
 
+void buttonSetup();
+void buttonLoop();
+
 #endif

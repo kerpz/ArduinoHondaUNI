@@ -58,6 +58,7 @@
 
 #include "eeprom.h"
 #include "display.h"
+#include "button.h"
 #include "app.h"
 
 void execEvery(int ms)
@@ -92,6 +93,7 @@ void setup()
 
   loadConfig();
 
+  buttonSetup();
   appSetup();
 
   delay(100);
@@ -104,5 +106,6 @@ void loop()
   if (display_enable)
     displayLoop();
 
+  buttonLoop();
   appLoop();
 }

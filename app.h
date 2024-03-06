@@ -6,27 +6,23 @@
 #define APPNAME "Honda UNI   v1.0"
 
 // UNUSED
-// #define PIN_INJECTOR 2
-// #define PIN_INJECTOR 3
-// #define PIN_TH 18
-// #define PIN_TH 19
-// #define PIN_ 9
+// dislplay spi
+#define PIN_SCK 2
+#define PIN_MOSI 3
+#define PIN_CS 4
+// security (out)
+#define PIN_LOCK 5
+#define PIN_UNLOCK 6
+#define PIN_SIREN 7
+// IN
+#define PIN_DOOR 8
+#define PIN_BUTTON 9
+// elm serial (out)
 #define PIN_RX 10
 #define PIN_TX 11
+// dlc serial (half duplex)
 #define PIN_DLC 12
-// OUT
-// #define PIN_LOCK 4
-// #define PIN_UNLOCK 5
-// #define PIN_SIREN 6
-#define PIN_SCK 4
-#define PIN_MOSI 5
-#define PIN_CS 6
-// IN
-// #define PIN_DOOR 7
-// #define PIN_BUTTON 8
-#define PIN_BUTTON 7
-// OUT
-#define PIN_AC 9
+//  OUT
 #define PIN_BUZZER 13
 // ANALOG
 #define PIN_VOLT 14
@@ -83,5 +79,6 @@ extern uint16_t run_time;
 
 void appSetup();
 void appLoop();
+void pushPinHi(uint8_t pin, uint32_t delayms);
 
 #endif
