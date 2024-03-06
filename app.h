@@ -10,23 +10,33 @@
 // #define PIN_INJECTOR 3
 // #define PIN_TH 18
 // #define PIN_TH 19
-// #define PIN_INJECTOR 9
+// #define PIN_ 9
 #define PIN_RX 10
 #define PIN_TX 11
-// #define PIN_DLC 12
+#define PIN_DLC 12
 // OUT
-#define PIN_LOCK 4
-#define PIN_UNLOCK 5
-#define PIN_AC 6
-#define PIN_BUZZER 13
+// #define PIN_LOCK 4
+// #define PIN_UNLOCK 5
+// #define PIN_SIREN 6
+#define PIN_SCK 4
+#define PIN_MOSI 5
+#define PIN_CS 6
 // IN
+// #define PIN_DOOR 7
+// #define PIN_BUTTON 8
 #define PIN_BUTTON 7
-#define PIN_DOOR 8
+// OUT
+#define PIN_AC 9
+#define PIN_BUZZER 13
 // ANALOG
 #define PIN_VOLT 14
 #define PIN_FP 15
 #define PIN_AFR 16
 #define PIN_TH 17
+// #define PIN_SDA 18
+// #define PIN_SCL 19
+// #define PIN_ A6
+// #define PIN_ A7
 
 // ecu data
 extern int rpm;

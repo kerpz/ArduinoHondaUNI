@@ -1,7 +1,14 @@
 #include <Arduino.h>
 // 128x64
 #include "U8glib.h"
-U8GLIB_ST7920_128X64_4X u8g(4, 3, 2); // SPI Com: SCK = en = 6, MOSI = rw = 5, CS = di = 4
+
+#include "display.h"
+
+// SPI Com:
+// SCK = en = 2
+// MOSI = rw = 3
+// CS = di = 4
+U8GLIB_ST7920_128X64_4X u8g(PIN_SCK, PIN_MOSI, PIN_CS);
 
 #include "display.h"
 

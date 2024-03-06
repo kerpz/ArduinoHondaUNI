@@ -3,7 +3,7 @@
 
 #include "app.h"
 
-SoftwareSerialWithHalfDuplex dlcSerial(12, 12, false, false);
+SoftwareSerialWithHalfDuplex dlcSerial(PIN_DLC, PIN_DLC, false, false);
 
 // ecu data
 int rpm = 9000;
@@ -404,8 +404,6 @@ void appSetup()
 {
   pinMode(PIN_AC, OUTPUT);     // Air Condition
   pinMode(PIN_BUZZER, OUTPUT); // Piezo Buzzer
-
-  pinMode(PIN_BUTTON, INPUT_PULLUP); // Button
 
   pinMode(PIN_DOOR, INPUT); // Door
   pinMode(PIN_VOLT, INPUT); // Volt meter

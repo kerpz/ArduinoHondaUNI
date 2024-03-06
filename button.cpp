@@ -1,64 +1,54 @@
 #include <Arduino.h>
 #include "button.h"
 
-bool button = false;
+int isButtonPressed = -1; // staes: -1 = floating, 0 = released, 1 = pressed
 
 void button_isr()
 {
-  button = !button;
-  Serial.println("button changed: " + String(button));
+  isButtonPressed = digitalRead(PIN_BUTTON);
+  Serial.println("button changed: " + String(isButtonPressed));
 }
 
 void buttonSetup()
 {
+  pinMode(PIN_BUTTON, INPUT_PULLUP); // Button
   attachInterrupt(PIN_BUTTON, button_isr, CHANGE);
 }
 
 void buttonLoop()
 {
-  /*
-  static unsigned long buttonsTick = 0;
-  static bool button_press_old = HIGH;
+  static unsigned long buttonTick = 0;
 
-  int button_press_new = digitalRead(PIN_BUTTON); // change to multiple button
-
-  if (button_press_new != button_press_old)
-  { // change state
-    if (button_press_new == HIGH)
-    { // on released
-      // pushPinHi(PIN_BUZZER, 30); // beep 30ms
-      if (millis() - buttonsTick >= 5000)
-      { // long press 5 secs
-        // scanDtcError();
-        // resetECU();
-      }
-      else if (millis() - buttonsTick >= 3000)
-      { // long press 3 secs
-        obd_select++;
-        if (obd_select > 2)
-        {
-          obd_select = 1;
-        }
-        // EEPROM.write(0, obd_select);
-      }
-      else if (millis() - buttonsTick >= 5)
-      { // short press 5 ms
-        pag_select++;
-        if (pag_select > 6)
-        {
-          pag_select = 1;
-        }
-        // EEPROM.write(1, pag_select);
-      }
-      buttonsTick = 0; // reset timer
-      isButtonPressed = false;
+  if (isButtonPressed == 0) // on released
+  {
+    // pushPinHi(PIN_BUZZER, 30); // beep 30ms
+    if (millis() - buttonTick >= 5000)
+    { // long press 5 secs
+      // scanDtcError();
+      // resetECU();
     }
-    else
-    {                         // on pressed
-      buttonsTick = millis(); // start timer
-      isButtonPressed = true;
+    else if (millis() - buttonTick >= 3000)
+    { // long press 3 secs
+      if (obd_select == 1)
+        obd_select = 2;
+      else
+        obd_select = 1;
+      saveConfig();
     }
-    button_press_old = button_press_new;
+    else if (millis() - buttonTick >= 5)
+    { // short press 5 ms
+      pag_select++;
+      if (pag_select > 6)
+      {
+        pag_select = 1;
+      }
+      // saveConfig();
+    }
+    buttonTick = 0;       // reset timer
+    isButtonPressed = -1; // floating state
   }
-  */
+  else if (isButtonPressed == 1) // on pressed
+  {
+    buttonTick = millis(); // start timer
+  }
 }
