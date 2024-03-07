@@ -48,7 +48,7 @@ void buttonLoop()
       else if (millis() - buttonTick >= 5)
       { // short press 5 ms
         pag_select++;
-        if (pag_select > 3)
+        if (pag_select > 2)
         {
           pag_select = 1;
         }
