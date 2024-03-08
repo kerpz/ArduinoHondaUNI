@@ -104,8 +104,8 @@ User Manual
   - rpm
   - kph
   - km
-  - psi
-  - volt
+  - kpa
+  - millivolt
   - degree
 
 Note

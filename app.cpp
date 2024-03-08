@@ -438,12 +438,12 @@ void appLoop()
   { // run every 250 ms
     msTick = millis();
 
-    // readEcuData();
+    readEcuData();
 
-    volt2 = readVoltage();
+    // volt2 = readVoltage();
     fp = readFuelPressure();
     afr = readAirFuelRatio();
-    // th = readThermistor();
+    th = readThermistor();
 
     // register top values
     if (rpm > rpmtop)
