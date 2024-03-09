@@ -103,8 +103,8 @@ void loop()
 {
   // execEvery(1000);
 
-  if (display_enable)
-    displayLoop();
+  // if (display_enable)
+  //   displayLoop();
 
   buttonLoop();
   appLoop();
