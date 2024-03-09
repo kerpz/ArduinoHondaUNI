@@ -101,7 +101,7 @@ void setup()
 
 void loop()
 {
-  execEvery(1000);
+  // execEvery(1000);
 
   if (display_enable)
     displayLoop();

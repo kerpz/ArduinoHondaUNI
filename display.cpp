@@ -14,7 +14,7 @@ U8GLIB_ST7920_128X64_4X u8g(PIN_SCK, PIN_MOSI, PIN_CS);
 
 uint8_t pag_select = 1; // lcd page
 
-void draw_page_1()
+void disaply_page_1()
 {
   char tmp_string[8];
 
@@ -72,8 +72,8 @@ void draw_page_1()
   u8g.setColorIndex(1);
 
   // dtostrf(volt2, 2, 1, tmp_string);
-  // dtostrf(volt, 2, 1, tmp_string);
-  sprintf(tmp_string, "%04d", volt);
+  dtostrf(volt, 2, 1, tmp_string);
+  // sprintf(tmp_string, "%04d", volt);
   u8g.drawStr(99, 11, tmp_string);
 
   u8g.drawBox(94, 21, 33, 9);
@@ -95,7 +95,7 @@ void draw_page_1()
   // u8g.drawStr(116, 53, "98");
 }
 
-void draw_page_2()
+void disaply_page_2()
 {
   char tmp_string[8];
 
@@ -166,16 +166,18 @@ void draw_page_2()
 
   u8g.drawBox(70, 32, 25, 9);
   u8g.setColorIndex(0);
-  u8g.drawStr(71, 32, "SFT");
+  u8g.drawStr(71, 32, "DTO");
   u8g.setColorIndex(1);
-  sprintf(tmp_string, "%03d", sft);
+  // sprintf(tmp_string, "%03d", sft);
+  sprintf(tmp_string, "%04d", dlcTimeout);
   u8g.drawStr(98, 32, tmp_string);
 
   u8g.drawBox(70, 42, 25, 9);
   u8g.setColorIndex(0);
-  u8g.drawStr(71, 42, "LFT");
+  u8g.drawStr(71, 42, "DCE");
   u8g.setColorIndex(1);
-  sprintf(tmp_string, "%03d", lft);
+  // sprintf(tmp_string, "%03d", lft);
+  sprintf(tmp_string, "%04d", dlcChecksumError);
   u8g.drawStr(98, 42, tmp_string);
 
   u8g.drawBox(70, 52, 25, 9);
@@ -193,6 +195,7 @@ void displaySetup()
 void displayLoop()
 {
   static unsigned long msTick = millis();
+  static unsigned long test = 0;
   if (millis() - msTick >= 250)
   { // run every 250 ms
     msTick = millis();
@@ -201,9 +204,9 @@ void displayLoop()
     do
     {
       if (pag_select == 1)
-        draw_page_1();
+        disaply_page_1();
       else if (pag_select == 2)
-        draw_page_2();
+        disaply_page_2();
     } while (u8g.nextPage());
   }
 }

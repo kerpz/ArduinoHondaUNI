@@ -5,6 +5,9 @@
 
 extern uint8_t pag_select;
 
+void disaply_page_1();
+void disaply_page_2();
+
 void displaySetup();
 void displayLoop();
 

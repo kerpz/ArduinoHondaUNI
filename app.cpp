@@ -57,7 +57,8 @@ float R2 = 220000.0; // Resistance of R2 (220kohms)
 float R3 = 10000.0;  // Thermistor divider
 
 uint8_t dlcdata[20] = {0}; // dlc data buffer
-uint8_t dlcTimeout = 0, dlcChecksumError = 0;
+uint8_t dlcTimeout = 0;
+uint8_t dlcChecksumError = 0;
 bool dlcWait = false;
 
 int dtcErrors[14] = {0};

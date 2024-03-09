@@ -72,6 +72,9 @@ extern uint8_t vssavg;
 // extern uint32_t trip_idle_time;
 extern uint32_t trip_distance;
 
+extern uint8_t dlcTimeout;
+extern uint8_t dlcChecksumError;
+
 extern int dtcErrors[14];
 extern int dtcCount;
 
