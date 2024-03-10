@@ -122,9 +122,7 @@ int dlcCommand(uint8_t cmd, uint8_t num, uint8_t loc, uint8_t len)
   // checksum
   crc = 0;
   for (i = 0; i < len + 2; i++)
-  {
     crc = crc + dlcdata[i];
-  }
   crc = 0xFF - (crc - 1);
   if (crc != dlcdata[len + 2])
   { // checksum failed
@@ -194,9 +192,7 @@ void readEcuData()
       rpm = (dlcdata[2] * 256 + dlcdata[3]) / 4; // OBD2
     // in odb1 rpm is -1
     if (rpm < 0)
-    {
       rpm = 0;
-    }
 
     vss = dlcdata[4]; // 0 - 255 kph
 
@@ -521,5 +517,7 @@ void appLoop()
     // gof = maf / afr / 6.17 / 454;
 
     // gear = vss / (rpm + 1) * 150 + 0.3;
+
+    displayLoop();
   }
 }

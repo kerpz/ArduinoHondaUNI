@@ -2,6 +2,7 @@
 #define APP_H
 
 #include "eeprom.h"
+#include "display.h"
 
 #define APPNAME "Honda UNI   v1.0"
 

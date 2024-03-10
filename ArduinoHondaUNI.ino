@@ -61,27 +61,6 @@
 #include "button.h"
 #include "app.h"
 
-void execEvery(int ms)
-{
-  static unsigned long msTick = millis();
-  static uint8_t sTick;
-
-  if (millis() - msTick >= ms)
-  { // run every N ms
-    msTick = millis();
-
-    if (sTick >= 59)
-    {
-      sTick = 0;
-      run_time++;
-    }
-    else
-    {
-      sTick++;
-    }
-  }
-}
-
 void setup()
 {
   delay(10);
@@ -101,11 +80,6 @@ void setup()
 
 void loop()
 {
-  // execEvery(1000);
-
-  // if (display_enable)
-  //   displayLoop();
-
   buttonLoop();
   appLoop();
 }
