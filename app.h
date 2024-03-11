@@ -73,6 +73,7 @@ extern uint8_t vssavg;
 // extern uint32_t trip_idle_time;
 extern uint32_t trip_distance;
 
+extern uint8_t dlcdata[20]; // dlc data buffer
 extern uint8_t dlcTimeout;
 extern uint8_t dlcChecksumError;
 
@@ -81,8 +82,12 @@ extern int dtcCount;
 
 extern uint16_t run_time;
 
+int dlcCommand(uint8_t cmd, uint8_t num, uint8_t loc, uint8_t len);
+void resetEcu();
+
+void pushPinHi(uint8_t pin, uint32_t delayms);
+
 void appSetup();
 void appLoop();
-void pushPinHi(uint8_t pin, uint32_t delayms);
 
 #endif

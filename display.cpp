@@ -25,7 +25,7 @@ void disaply_page_1()
 
   u8g.drawBox(0, 0, 90, 9);
   u8g.setColorIndex(0);
-  u8g.drawStr(1, 0, "ECU:disconnect");
+  u8g.drawStr(1, 0, "Philip Bordado");
   u8g.setColorIndex(1);
 
   u8g.drawBox(0, 10, 25, 9);
@@ -106,7 +106,7 @@ void disaply_page_2()
 
   u8g.drawBox(0, 0, 127, 9);
   u8g.setColorIndex(0);
-  u8g.drawStr(1, 0, "ECU:disconnect");
+  u8g.drawStr(1, 0, "Philip Bordado");
   u8g.setColorIndex(1);
 
   u8g.drawFrame(0, 10, 127, 53);

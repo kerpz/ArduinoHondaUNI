@@ -294,7 +294,7 @@ long readVcc()
     long vcc = (high << 8) | low;
     vcc = 1125300L / vcc; // Calculate Vcc (in mV); 1125300 = 1.1*1023*1000
     */
-  long vcc = 5000; // use a multimeter instead?
+  long vcc = 4550; // use a multimeter instead?
   return vcc;
 }
 
@@ -521,3 +521,10 @@ void appLoop()
     displayLoop();
   }
 }
+
+/* for elm implementation / bluetooth
+void appLoop()
+{
+  elmLoop();
+}
+*/

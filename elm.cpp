@@ -28,8 +28,8 @@ void bt_write(char *str)
 
 void elmSetup()
 {
-  btSerial.begin(9600); // HC-05
-  // btSerial.begin(38400); // HC-06
+  // btSerial.begin(9600); // HC-05
+  btSerial.begin(38400); // HC-06
 }
 
 void elmLoop()
@@ -38,7 +38,7 @@ void elmLoop()
   char btdata2[20] = {0}; // bt data out buffer
   int i = 0;
 
-  // btSerial.listen();
+  btSerial.listen();
   while (btSerial.available())
   {
     btdata1[i] = toupper(btSerial.read());
@@ -60,7 +60,7 @@ void elmLoop()
       }
       else if (!strcmp(btdata1, "ATI"))
       { // print id / general
-        sprintf_P(btdata2, PSTR("Honda OBD v1.0\r\n>"));
+        sprintf_P(btdata2, "%s\r\n>", APPNAME);
       }
       else if (!strcmp(btdata1, "ATZ"))
       { // reset all / general
@@ -68,7 +68,7 @@ void elmLoop()
         elm_space = true;
         elm_linefeed = true;
         elm_header = false;
-        sprintf_P(btdata2, PSTR("Honda OBD v1.0\r\n>"));
+        sprintf_P(btdata2, "%s\r\n>", APPNAME);
       }
       else if (i == 4 && strstr(btdata1, "ATE"))
       { // echo on/off / general
@@ -120,7 +120,7 @@ void elmLoop()
         {
           obd_select = 2;
         }
-        saveConfig();
+        // EEPROM.write(0, obd_select);
         sprintf_P(btdata2, PSTR("OK\r\n>"));
       }
       else if (!strcmp(btdata1, "ATDHP"))
@@ -152,7 +152,7 @@ void elmLoop()
       { // push arduino pin high for 1sec // used for locking/unlocking door
         byte pin = ((btdata1[5] > '9') ? (btdata1[5] & ~0x20) - 'A' + 10 : (btdata1[5] - '0') * 16) +
                    ((btdata1[6] > '9') ? (btdata1[6] & ~0x20) - 'A' + 10 : (btdata1[6] - '0'));
-        // pushPinHi(pin, 1000);
+        pushPinHi(pin, 1000);
 
         sprintf_P(btdata2, PSTR("OK\r\n>"));
       }
@@ -164,20 +164,15 @@ void elmLoop()
       { // mode 04
         // clear dtc / stored values
         // reset dtc/ecu honda
-        // 21 04 01 DA / 01 03 FC
-        // dlcCommand(0x21, 0x04, 0x01, 0x00, dlcdata); // reset ecu
-        // resetEcu();
+        resetEcu();
         sprintf_P(btdata2, PSTR("OK\r\n>"));
       }
       else if (i == 2 && btdata1[0] == '0' && btdata1[1] == '3')
       { // mode 03
-        // request dtc
         // do scan then report the errors
         // 43 01 33 00 00 00 00 = P0133
-        // sprintf_P(btdata2, PSTR("SEARCHING...\r\n"));
-        // sprintf_P(btdata2, PSTR("UNABLE TO CONNECT\r\n>"));
-        sprintf_P(btdata2, PSTR("43 01 33 00 00 00 00\r\n>"));
-        sprintf_P(btdata2, PSTR("OK\r\n>"));
+        // sprintf_P(btdata2, PSTR("43 01 33 00 00 00 00\r\n>"), a);
+        // sprintf_P(btdata2, PSTR("OK\r\n>"));
       }
       else if (i <= 5 && btdata1[0] == '0' && btdata1[1] == '1')
       { // mode 01
@@ -189,77 +184,125 @@ void elmLoop()
         else if (strstr(&btdata1[2], "01"))
         {
           // dtc / AA BB CC DD / A7 = MIL on/off, A6-A0 = DTC_CNT
+          // if (dlcCommand(0x20, 0x05, 0x0B, 0x01)) {
+          //  byte v = ((dlcdata[2] >> 5) & 1) << 7; // get bit 5 on dlcdata[2], set it to a7
+          //  sprintf_P(btdata2, PSTR("41 01 %02X 00 00 00\r\n>"), v);
+          //}
         }
-        // else if (strstr(&btdata1[2], "02")) { // freeze dtc / 00 61 ???
-        //   if (dlcCommand(0x20, 0x05, 0x98, 0x02, dlcdata)) {
-        //     sprintf_P(btdata2, PSTR("41 02 %02X %02X\r\n>"), dlcdata[2], dlcdata[3]);
-        //   }
-        // }
-        // else if (strstr(&btdata1[2], "03")) { // fuel system status / 01 00 ???
-        // }
-        // else if (strstr(&btdata1[2], "04"))
-        //{ // engine load (%)
-        //  byte v = 0;
-        //  v = (v * 255) / 100; // conversion to byte range
-        //  sprintf_P(btdata2, PSTR("41 04 %02X\r\n>"), v);
-        //}
+        /*
+        else if (strstr(&btdata1[2], "02")) { // freeze dtc / 00 61 ???
+          if (dlcCommand(0x20, 0x05, 0x98, 0x02)) {
+            sprintf_P(btdata2, PSTR("41 02 %02X %02X\r\n>"), dlcdata[2], dlcdata[3]);
+          }
+        }
+        else if (strstr(&btdata1[2], "03")) { // fuel system status / 01 00 ???
+          //if (dlcCommand(0x20, 0x05, 0x0F, 0x01)) { // flags
+          //  byte a = dlcdata[2] & 1; // get bit 0 on dlcdata[2]
+          //  a = (dlcdata[2] == 1 ? 2 : 1); // convert to comply obd2
+          //  sprintf_P(btdata2, PSTR("41 03 %02X 00\r\n>"), a);
+          // }
+          if (dlcCommand(0x20, 0x05, 0x9a, 0x02)) {
+            sprintf_P(btdata2, PSTR("41 03 %02X %02X\r\n>"), dlcdata[2], dlcdata[3]);
+          }
+        }
+        else if (strstr(&btdata1[2], "04")) { // engine load (%)
+          if (dlcCommand(0x20, 0x05, 0x9c, 0x01)) {
+            sprintf_P(btdata2, PSTR("41 04 %02X\r\n>"), dlcdata[2]);
+          }
+        }
+        */
         else if (strstr(&btdata1[2], "05"))
         { // ect (°C)
-          uint8_t v = ect;
-          v = v + 40; // conversion
-          sprintf_P(btdata2, PSTR("41 05 %02X\r\n>"), v);
+          if (dlcCommand(0x20, 0x05, 0x10, 0x01))
+          {
+            float f = dlcdata[2];
+            f = 155.04149 - f * 3.0414878 + pow(f, 2) * 0.03952185 - pow(f, 3) * 0.00029383913 + pow(f, 4) * 0.0000010792568 - pow(f, 5) * 0.0000000015618437;
+            dlcdata[2] = round(f) + 40; // A-40
+            sprintf_P(btdata2, PSTR("41 05 %02X\r\n>"), dlcdata[2]);
+          }
         }
         else if (strstr(&btdata1[2], "06"))
-        {                              // short FT (%)
-          uint8_t v = sft;             // -100 too rich, 99.2 too lean
-          v = ((v + 100) * 128) / 100; // conversion
-          sprintf_P(btdata2, PSTR("41 06 %02X\r\n>"), v);
+        { // short FT (%)
+          if (dlcCommand(0x20, 0x05, 0x20, 0x01))
+          {
+            sprintf_P(btdata2, PSTR("41 06 %02X\r\n>"), dlcdata[2]);
+          }
         }
         else if (strstr(&btdata1[2], "07"))
-        {                              // long FT (%)
-          uint8_t v = lft;             // -100 too rich, 99.2 too lean
-          v = ((v + 100) * 128) / 100; // conversion
-          sprintf_P(btdata2, PSTR("41 07 %02X\r\n>"), v);
+        { // long FT (%)
+          if (dlcCommand(0x20, 0x05, 0x22, 0x01))
+          {
+            sprintf_P(btdata2, PSTR("41 07 %02X\r\n>"), dlcdata[2]);
+          }
         }
         else if (strstr(&btdata1[2], "0A"))
-        {                  // fuel pressure
-          uint8_t v = 255; // 255 kPa / 37 psi
-          v = v / 3;       // conversion
-          sprintf_P(btdata2, PSTR("41 0A %02X\r\n>"), v);
+        { // fuel pressure
+          //  btSerial.print("41 0A EF\r\n");
+          byte b = fp / 3;
+          sprintf_P(btdata2, PSTR("41 0A %02X\r\n>"), b);
         }
         else if (strstr(&btdata1[2], "0B"))
-        {                   // map (kPa)
-          uint8_t v = maps; // 101 kPa @ off|wot // 10kPa - 30kPa @ idle
-          sprintf_P(btdata2, PSTR("41 0B %02X\r\n>"), v);
+        { // map (kPa)
+          if (dlcCommand(0x20, 0x05, 0x12, 0x01))
+          {
+            int i = dlcdata[2] * 0.716 - 5; // 101 kPa @ off|wot // 10kPa - 30kPa @ idle
+            sprintf_P(btdata2, PSTR("41 0B %02X\r\n>"), i);
+          }
         }
         else if (strstr(&btdata1[2], "0C"))
         { // rpm
-          int v = rpm;
-          v = v * 4;                                                                 // conversion
-          sprintf_P(btdata2, PSTR("41 0C %02X %02X\r\n>"), highByte(v), lowByte(v)); //((A*256)+B)/4
+          if (dlcCommand(0x20, 0x05, 0x00, 0x02))
+          {
+            int i = 0;
+            if (obd_select == 1)
+            {
+              i = (1875000 / (dlcdata[2] * 256 + dlcdata[3] + 1)) * 4;
+            } // OBD1
+            if (obd_select == 2)
+            {
+              i = (dlcdata[2] * 256 + dlcdata[3]);
+            } // OBD2
+            // in odb1 rpm is -1
+            if (i < 0)
+            {
+              i = 0;
+            }
+            sprintf_P(btdata2, PSTR("41 0C %02X %02X\r\n>"), highByte(i), lowByte(i)); //((A*256)+B)/4
+          }
         }
         else if (strstr(&btdata1[2], "0D"))
         { // vss (km/h)
-          uint8_t v = vss;
-          sprintf_P(btdata2, PSTR("41 0D %02X\r\n>"), v);
+          if (dlcCommand(0x20, 0x05, 0x02, 0x01))
+          {
+            sprintf_P(btdata2, PSTR("41 0D %02X\r\n>"), dlcdata[2]);
+          }
         }
         else if (strstr(&btdata1[2], "0E"))
         { // timing advance (°)
-          float f = ign;
-          uint8_t v = (f + 64) * 2; // conversion
-          sprintf_P(btdata2, PSTR("41 0E %02X\r\n>"), v);
+          if (dlcCommand(0x20, 0x05, 0x26, 0x01))
+          {
+            byte b = ((dlcdata[2] - 24) / 2) + 128;
+            // byte b = (ign + 64) * 2;
+            sprintf_P(btdata2, PSTR("41 0E %02X\r\n>"), b);
+          }
         }
         else if (strstr(&btdata1[2], "0F"))
         { // iat (°C)
-          uint8_t v = iat;
-          v = v + 40; // conversion
-          sprintf_P(btdata2, PSTR("41 0F %02X\r\n>"), v);
+          if (dlcCommand(0x20, 0x05, 0x11, 0x01))
+          {
+            float f = dlcdata[2];
+            f = 155.04149 - f * 3.0414878 + pow(f, 2) * 0.03952185 - pow(f, 3) * 0.00029383913 + pow(f, 4) * 0.0000010792568 - pow(f, 5) * 0.0000000015618437;
+            dlcdata[2] = round(f) + 40; // A-40
+            sprintf_P(btdata2, PSTR("41 0F %02X\r\n>"), dlcdata[2]);
+          }
         }
         else if (strstr(&btdata1[2], "11"))
         { // tps (%)
-          uint8_t v = tps;
-          v = (v * 255) / 100; // conversion to byte range
-          sprintf_P(btdata2, PSTR("41 11 %02X\r\n>"), v);
+          if (dlcCommand(0x20, 0x05, 0x14, 0x01))
+          {
+            byte b = (dlcdata[2] - 24) / 2;
+            sprintf_P(btdata2, PSTR("41 11 %02X\r\n>"), b);
+          }
         }
         else if (strstr(&btdata1[2], "13"))
         {                                            // o2 sensor present
@@ -267,7 +310,10 @@ void elmLoop()
         }
         else if (strstr(&btdata1[2], "14"))
         { // o2 (V)
-          // sprintf_P(btdata2, PSTR("41 14 %02X FF\r\n>"), dlcdata[2]);
+          if (dlcCommand(0x20, 0x05, 0x15, 0x01))
+          {
+            sprintf_P(btdata2, PSTR("41 14 %02X FF\r\n>"), dlcdata[2]);
+          }
         }
         else if (strstr(&btdata1[2], "1C"))
         {
@@ -277,38 +323,90 @@ void elmLoop()
         {
           sprintf_P(btdata2, PSTR("41 20 00 00 20 01\r\n>")); // pid 33 and 40
         }
-        // else if (strstr(&btdata1[2], "2F"))
-        //{ // fuel level (%)
-        //   uint8_t v = 75;
-        //   v = (v * 255) / 100; // conversion to byte range
-        //   sprintf_P(btdata2, PSTR("41 2F %02X\r\n>"), v);
+        // else if (strstr(&btdata1[2], "2F")) { // fuel level (%)
+        //   sprintf_P(btdata2, PSTR("41 2F FF\r\n>")); // max
         // }
-        // else if (strstr(&btdata1[2], "33"))
-        //{                  // baro (kPa)
-        //   uint8_t v = baro; // 101 kPa
-        //   sprintf_P(btdata2, PSTR("41 33 %02X\r\n>"), v);
-        // }
+        else if (strstr(&btdata1[2], "33"))
+        { // baro (kPa)
+          if (dlcCommand(0x20, 0x05, 0x13, 0x01))
+          {
+            int i = dlcdata[2] * 0.716 - 5; // 101 kPa
+            sprintf_P(btdata2, PSTR("41 0B %02X\r\n>"), i);
+          }
+        }
         else if (strstr(&btdata1[2], "40"))
         {
           sprintf_P(btdata2, PSTR("41 40 48 00 00 00\r\n>")); // pid 42 and 45
         }
         else if (strstr(&btdata1[2], "42"))
         { // ecu voltage (V)
-          float f = volt2;
-          unsigned int u = f * 1000; // ((A*256)+B)/1000
-          sprintf_P(btdata2, PSTR("41 42 %02X %02X\r\n>"), highByte(u), lowByte(u));
+          if (dlcCommand(0x20, 0x05, 0x17, 0x01))
+          {
+            float f = dlcdata[2];
+            f = f / 10.45;
+            unsigned int u = f * 1000; // ((A*256)+B)/1000
+            sprintf_P(btdata2, PSTR("41 42 %02X %02X\r\n>"), highByte(u), lowByte(u));
+          }
         }
         else if (strstr(&btdata1[2], "45"))
         { // iacv / relative throttle position (%)
-          uint8_t v = iacv;
-          // v = (v * 255) / 100; // conversion to byte range
-          sprintf_P(btdata2, PSTR("41 45 %02X\r\n>"), v);
+          if (dlcCommand(0x20, 0x05, 0x28, 0x01))
+          { // dlcdata[2]
+            // byte b = dlcdata[2] / 2.55;
+            // b = b * 2.55; // conversion to byte range
+            sprintf_P(btdata2, PSTR("41 45 %02X\r\n>"), dlcdata[2]);
+          }
         }
       }
 
-      if (strlen(btdata2) == 0)
-        sprintf_P(btdata2, PSTR("NO DATA\r\n>"));
+      // direct honda PID access
+      // 1 byte access (21AA) // 21 = 1 byte, AA = address
+      else if (btdata1[0] == '2' && btdata1[1] == '1')
+      {
+        byte addr = ((btdata1[2] > '9') ? (btdata1[2] & ~0x20) - 'A' + 10 : (btdata1[2] - '0') * 16) +
+                    ((btdata1[3] > '9') ? (btdata1[3] & ~0x20) - 'A' + 10 : (btdata1[3] - '0'));
+        if (dlcCommand(0x20, 0x05, addr, 0x01))
+        {
+          sprintf_P(btdata2, PSTR("60 %02X %02X\r\n>"), addr, dlcdata[2]);
+        }
+      }
+      // 2 bytes access (22AA) // 22 = 2 bytes, AA = address
+      else if (btdata1[0] == '2' && btdata1[1] == '2')
+      {
+        byte addr = ((btdata1[2] > '9') ? (btdata1[2] & ~0x20) - 'A' + 10 : (btdata1[2] - '0') * 16) +
+                    ((btdata1[3] > '9') ? (btdata1[3] & ~0x20) - 'A' + 10 : (btdata1[3] - '0'));
+        if (dlcCommand(0x20, 0x05, addr, 0x02))
+        {
+          sprintf_P(btdata2, PSTR("60 %02X %02X %02X\r\n>"), addr, dlcdata[2], dlcdata[3]);
+        }
+      }
+      // 4 byte access (24AA) // 24 = 4 bytes, AA = address
+      else if (btdata1[0] == '2' && btdata1[1] == '4')
+      {
+        byte addr = ((btdata1[2] > '9') ? (btdata1[2] & ~0x20) - 'A' + 10 : (btdata1[2] - '0') * 16) +
+                    ((btdata1[3] > '9') ? (btdata1[3] & ~0x20) - 'A' + 10 : (btdata1[3] - '0'));
+        if (dlcCommand(0x20, 0x05, addr, 0x04))
+        {
+          sprintf_P(btdata2, PSTR("60 %02X %02X %02X %02X %02X\r\n>"), addr, dlcdata[2], dlcdata[3], dlcdata[4], dlcdata[5]);
+        }
+      }
+      // 2 byte access (25) // for timeout errors
+      else if (btdata1[0] == '2' && btdata1[1] == '5')
+      {
+        sprintf_P(btdata2, PSTR("60 %02X\r\n>"), dlcTimeout);
+        // dlcTimeout++;
+        // if (dlcTimeout > 255) dlcTimeout = 0;
+      }
+      // 2 byte access (26) // for checksum errors
+      else if (btdata1[0] == '2' && btdata1[1] == '6')
+      {
+        sprintf_P(btdata2, PSTR("60 %02X\r\n>"), dlcChecksumError);
+      }
 
+      if (strlen(btdata2) == 0)
+      {
+        sprintf_P(btdata2, PSTR("NO DATA\r\n>"));
+      }
       bt_write(btdata2); // send reply
 
       break;
