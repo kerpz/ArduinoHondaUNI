@@ -2,6 +2,8 @@
 #define APP_H
 
 #include "eeprom.h"
+#include "button.h"
+#include "elm.h"
 #include "display.h"
 
 #define APPNAME "Honda UNI   v1.0"
@@ -59,19 +61,25 @@ extern bool sw_vtec;
 
 // extra sensor
 extern float volt2;
-extern float th;
 extern float afr;
 extern float fp;
-extern bool cp;
+extern float th;
+// bool cp = 0;
 
 extern int rpmtop;
+extern int volttop;
+extern int mapstop;
+extern uint8_t tpstop;
+extern int ecttop;
+extern int iattop;
+
+extern uint32_t trip_run_time;
+extern uint32_t trip_idle_time;
+extern uint32_t trip_distance;
+extern uint32_t trip_vss_sum;
 
 extern uint8_t vsstop;
 extern uint8_t vssavg;
-
-// extern uint32_t trip_run_time;
-// extern uint32_t trip_idle_time;
-extern uint32_t trip_distance;
 
 extern uint8_t dlcdata[20]; // dlc data buffer
 extern uint8_t dlcTimeout;
@@ -83,8 +91,41 @@ extern int dtcCount;
 extern uint16_t run_time;
 
 int dlcCommand(uint8_t cmd, uint8_t num, uint8_t loc, uint8_t len);
-void resetEcu();
 
+void resetEcu();
+void readEcuData();
+/*
+int readRPM();
+int readVSS();
+float readECT();
+float readIAT();
+int readMAP();
+int readBARO();
+int readTPS();
+float readO2();
+float readVOLT();
+int readALTFR();
+float readELD();
+float readEGR();
+int readSFT();
+int readLFT();
+int readINJ();
+float readIGN();
+float readIGN2();
+int readIACV();
+int readKNOC();
+bool readAIRCON();
+bool readBRAKE();
+bool readVTEC();
+*/
+
+// extra sensors
+float readVoltage();
+float readAirFuelRatio();
+float readThermistor();
+float readFuelPressure();
+
+// controls
 void pushPinHi(uint8_t pin, uint32_t delayms);
 
 void appSetup();

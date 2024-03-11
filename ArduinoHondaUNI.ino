@@ -56,30 +56,14 @@
  - 21 = (A7)
 */
 
-#include "eeprom.h"
-#include "display.h"
-#include "button.h"
 #include "app.h"
 
 void setup()
 {
-  delay(10);
-
-  Serial.begin(115200);
-
-  Serial.println();
-  Serial.println(APPNAME);
-
-  loadConfig();
-
-  buttonSetup();
   appSetup();
-
-  delay(100);
 }
 
 void loop()
 {
-  buttonLoop();
   appLoop();
 }

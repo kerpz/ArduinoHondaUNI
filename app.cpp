@@ -23,16 +23,16 @@ float volt = 0;
 float o2 = 0;
 uint8_t vss = 0;
 
-bool sw_aircon = false;
-bool sw_brake = false;
-bool sw_vtec = false;
+bool sw_aircon = 0;
+bool sw_brake = 0;
+bool sw_vtec = 0;
 
 // extra sensor
 float volt2 = 0;
-float th = 0;
 float afr = 0;
 float fp = 0;
-bool cp = 0;
+float th = 0;
+// bool cp = 0;
 
 int rpmtop = 0;
 int volttop = 0;
@@ -174,6 +174,197 @@ void resetEcu()
 }
 
 // Read ECU Data
+/*
+int readRPM()
+{
+  int i = -1; // invalid
+  if (dlcCommand(0x20, 0x05, 0x00, 0x02))
+  {
+    if (obd_select == 1)
+      i = (1875000 / (dlcdata[2] * 256 + dlcdata[3] + 1)) * 4;
+    if (obd_select == 2)
+      i = (dlcdata[2] * 256 + dlcdata[3]);
+    if (i < 0)
+      i = 0;
+  }
+  return i;
+}
+
+int readVSS()
+{
+  int i = -1.0; // invalid
+  if (dlcCommand(0x20, 0x05, 0x02, 0x01))
+    i = dlcdata[2];
+  return i;
+}
+
+float readECT() // (C)
+{
+  float f = -40.0; // invalid
+  if (dlcCommand(0x20, 0x05, 0x10, 0x01))
+  {
+    f = dlcdata[2];
+    f = 155.04149 - f * 3.0414878 + pow(f, 2) * 0.03952185 - pow(f, 3) * 0.00029383913 + pow(f, 4) * 0.0000010792568 - pow(f, 5) * 0.0000000015618437;
+  }
+  return f;
+}
+
+float readIAT() // (C)
+{
+  float f = -40.0; // invalid
+  if (dlcCommand(0x20, 0x05, 0x11, 0x01))
+  {
+    f = dlcdata[2];
+    f = 155.04149 - f * 3.0414878 + pow(f, 2) * 0.03952185 - pow(f, 3) * 0.00029383913 + pow(f, 4) * 0.0000010792568 - pow(f, 5) * 0.0000000015618437;
+  }
+  return f;
+}
+
+int readMAP() // (kPa) // 101 kPa @ off|wot // 10kPa - 30kPa @ idle
+{
+  float f = -1.0; // invalid
+  if (dlcCommand(0x20, 0x05, 0x12, 0x01))
+    f = dlcdata[2] * 0.716 - 5;
+  return f; // converted to int
+}
+
+int readBARO() // (kPa)
+{
+  float f = -1.0; // invalid
+  if (dlcCommand(0x20, 0x05, 0x12, 0x01))
+    f = dlcdata[2] * 0.716 - 5;
+  return f; // converted to int
+}
+
+int readTPS() // (%) 0 - 100
+{
+  float f = -1.0; // invalid
+  if (dlcCommand(0x20, 0x05, 0x14, 0x01))
+    f = (dlcdata[2] - 24) / 2;
+  return f;
+}
+
+float readO2() // (V)
+{
+  float f = -1.0; // invalid
+  if (dlcCommand(0x20, 0x05, 0x15, 0x01))
+    f = dlcdata[2] / 51.3;
+  return f;
+}
+
+float readVOLT() // (V)
+{
+  float f = -1.0; // invalid
+  if (dlcCommand(0x20, 0x05, 0x17, 0x01))
+    f = dlcdata[2] / 10.45;
+  return f;
+}
+
+int readALTFR() // (%)
+{
+  float f = -1.0; // invalid
+  if (dlcCommand(0x20, 0x05, 0x18, 0x01))
+    f = dlcdata[2] / 2.55;
+  return f;
+}
+
+float readELD() // (A)
+{
+  float f = -1.0; // invalid
+  if (dlcCommand(0x20, 0x05, 0x19, 0x01))
+    f = 77.06 - dlcdata[2] / 2.5371;
+  return f;
+}
+
+float readEGR() // (V)
+{
+  float f = -1.0; // invalid
+  if (dlcCommand(0x20, 0x05, 0x19, 0x01))
+    f = dlcdata[2] / 51.3;
+  return f;
+}
+
+int readSFT() // (%)
+{
+  int i = -1; // invalid
+  if (dlcCommand(0x20, 0x05, 0x20, 0x01))
+    i = (dlcdata[2] / 128 - 1) * 100;
+  return i;
+}
+
+int readLFT() // (%)
+{
+  int i = -1; // invalid
+  if (dlcCommand(0x20, 0x05, 0x22, 0x01))
+    i = (dlcdata[2] / 128 - 1) * 100;
+  return i;
+}
+
+int readINJ() // (ms)
+{
+  int i = -1; // invalid
+  if (dlcCommand(0x20, 0x05, 0x24, 0x02))
+    i = (dlcdata[2] * 256 + dlcdata[3]) / 250; // (ms) 0 to 16;
+  return i;
+}
+
+float readIGN() // (degree)
+{
+  float f = -1.0; // invalid
+  if (dlcCommand(0x20, 0x05, 0x26, 0x01))
+    //(H26-128)/2; (H26-28)/2.8444; (H26-21)/4.266
+    f = (dlcdata[2] - 128) / 2;
+  return f;
+}
+
+float readIGN2() // (degree)
+{
+  float f = -1.0; // invalid
+  if (dlcCommand(0x20, 0x05, 0x27, 0x01))
+    f = (dlcdata[2] - 128) / 2;
+  return f;
+}
+
+int readIACV() // (%)
+{
+  float f = -1.0; // invalid
+  if (dlcCommand(0x20, 0x05, 0x28, 0x01))
+    f = dlcdata[2] / 2.55;
+  return f;
+}
+
+int readKNOC() //
+{
+  float f = -1.0; // invalid
+  if (dlcCommand(0x20, 0x05, 0x3C, 0x01))
+    f = dlcdata[2] / 55;
+  return f;
+}
+
+bool readAIRCON() //
+{
+  int i = -1; // invalid
+  if (dlcCommand(0x20, 0x05, 0x08, 0x01))
+    i = bitRead(dlcdata[2], 2);
+  return i;
+}
+
+bool readBRAKE() //
+{
+  int i = -1; // invalid
+  if (dlcCommand(0x20, 0x05, 0x08, 0x01))
+    i = bitRead(dlcdata[2], 4);
+  return i;
+}
+
+bool readVTEC() //
+{
+  int i = -1; // invalid
+  if (dlcCommand(0x20, 0x05, 0x0A, 0x01))
+    i = bitRead(dlcdata[2], 3);
+  return i;
+}
+*/
 void readEcuData()
 {
   float f;
@@ -192,9 +383,11 @@ void readEcuData()
       rpm = (dlcdata[2] * 256 + dlcdata[3]) / 4; // OBD2
     // in odb1 rpm is -1
     if (rpm < 0)
+    {
       rpm = 0;
+    }
 
-    vss = dlcdata[4]; // 0 - 255 kph
+    vss = dlcdata[4];
 
     // discrete sensors
     // dlcdata[10]
@@ -217,10 +410,8 @@ void readEcuData()
     f = dlcdata[3];
     iat = 155.04149 - f * 3.0414878 + pow(f, 2) * 0.03952185 - pow(f, 3) * 0.00029383913 + pow(f, 4) * 0.0000010792568 - pow(f, 5) * 0.0000000015618437;
     maps = dlcdata[4] * 0.716 - 5; // 101 kPa @ off|wot // 10kPa - 30kPa @ idle
-    // maps = maps * 0.145038;        // to psi // 14.7 psi @ off|wot, 1.4 - 4.4 psi @ idle
     baro = dlcdata[5] * 0.716 - 5; // kPa
-    // baro = baro * 0.145038;        // to psi
-    tps = (dlcdata[6] - 24) / 2; // (%) 0 - 100
+    tps = (dlcdata[6] - 24) / 2;
 
     f = dlcdata[7];
     o2 = f / 51.3; // (V) o2
@@ -254,7 +445,7 @@ void readEcuData()
     f = dlcdata[9];
     lmt = (f - 24) / 4;
 
-    iacv = dlcdata[10] / 2.55; // (%) 0 - 100
+    iacv = dlcdata[10] / 2.55;
   }
 
   delay(1);
@@ -416,7 +607,17 @@ void appSetup()
   pinMode(PIN_AFR, INPUT);  // AEM UEGO AFR
   pinMode(PIN_TH, INPUT);   // 10k Thermistor
 
+  Serial.begin(115200);
+
+  Serial.println();
+  Serial.println(APPNAME);
+
   dlcSerial.begin(9600);
+
+  loadConfig();
+
+  buttonSetup();
+  elmSetup();
 
   // initial beep
   for (int i = 0; i < 3; i++)
@@ -430,101 +631,8 @@ void appSetup()
 
 void appLoop()
 {
-  static unsigned long msTick = millis();
-  if (millis() - msTick >= 250)
-  { // run every 250 ms
-    msTick = millis();
-
-    readEcuData();
-
-    // volt2 = readVoltage();
-    fp = readFuelPressure();
-    afr = readAirFuelRatio();
-    th = readThermistor();
-
-    // register top values
-    if (rpm > rpmtop)
-      rpmtop = rpm;
-    if (vss > vsstop)
-      vsstop = vss;
-    if (ect > ecttop)
-      ecttop = ect;
-    if (iat > iattop)
-      iattop = iat;
-    if (volt > volttop)
-      volttop = volt;
-    if (maps > mapstop)
-      mapstop = maps;
-
-    // trip computer essentials
-    if (rpm > 0)
-    {
-      if (vss > 0)
-      { // running time
-        trip_run_time++;
-        trip_vss_sum += vss;
-        vssavg = (trip_vss_sum / trip_run_time);
-
-        float f;
-        // f = vssavg;
-        // f = ((f * 1000) / 14400) * running_time; // @ 250ms
-        // distance = round(f);
-
-        // formula: distance = speed * fps / 3600
-        // where: distance = kilometer(s), speed = km/h, fps in second(s)
-        f = vss;
-        f = f * 0.25 / 3600; // @ 250ms / km
-        f = f * 1000;        // km to meters
-        trip_distance = trip_distance + round(f);
-
-        // time = distance / speed
-      }
-      else
-      { // idle time
-        trip_idle_time++;
-      }
-    }
-
-    if (ect > ect_alarm) // engine temp alarm
-      digitalWrite(PIN_BUZZER, HIGH);
-    else if (vss > 100 && vss < 105) // car speed alarm/notification
-      digitalWrite(PIN_BUZZER, HIGH);
-    else
-      digitalWrite(PIN_BUZZER, LOW);
-
-    // aircon controller (replace the OEM one)
-    /*
-    if (th <= th_threshold)
-    {
-      digitalWrite(PIN_AC, LOW);
-      cp = 0;
-    }
-    else if (th >= (th_threshold + 10))
-    {
-      digitalWrite(PIN_AC, HIGH);
-      cp = 1;
-    }
-    */
-
-    // IMAP = RPM * MAP / IAT / 2
-    // MAF = (IMAP/60)*(VE/100)*(Eng Disp)*(MMA)/(R)
-    // Where: VE = 80% (Volumetric Efficiency), R = 8.314 J/°K/mole, MMA = 28.97 g/mole (Molecular mass of air)
-    // int imap = rpm * maps / (iat + 273) / 2;
-    // ve = 75, ed = 1.595, afr = 14.7
-    // maf = (imap / 60) * (80 / 100) * 1.595 * 28.9644 / 8.314472;
-
-    // (gallons of fuel) = (grams of air) / (air/fuel ratio) / 6.17 / 454
-    // gof = maf / afr / 6.17 / 454;
-
-    // gear = vss / (rpm + 1) * 150 + 0.3;
-
-    displayLoop();
-  }
-}
-
-/* for elm implementation / bluetooth
-void appLoop()
-{
+  buttonLoop();
   elmLoop();
+  if (!elm_mode)
+    displayLoop();
 }
-*/

@@ -7,10 +7,10 @@ SoftwareSerialWithHalfDuplex btSerial(PIN_RX, PIN_TX); // RX, TX
 
 bool elm_mode;
 bool elm_memory;
-bool elm_echo;
-bool elm_space;
-bool elm_linefeed;
-bool elm_header;
+bool elm_echo = 0;
+bool elm_space = 1;
+bool elm_linefeed = 1;
+bool elm_header = 0;
 uint8_t elm_protocol; // auto
 
 void bt_write(char *str)
@@ -34,6 +34,7 @@ void elmSetup()
 
 void elmLoop()
 {
+  static unsigned long btTick = 0;
   char btdata1[20] = {0}; // bt data in buffer
   char btdata2[20] = {0}; // bt data out buffer
   int i = 0;
@@ -41,6 +42,12 @@ void elmLoop()
   btSerial.listen();
   while (btSerial.available())
   {
+
+    if (!elm_mode)
+      elm_mode = 1;
+
+    btTick = millis();
+
     btdata1[i] = toupper(btSerial.read());
     // Serial.print(btdata1[i]);
     delay(1); // this is required
@@ -52,10 +59,10 @@ void elmLoop()
       // byte len = strlen(btdata1);
       if (!strcmp(btdata1, "ATD"))
       { // defaults
-        elm_echo = false;
-        elm_space = true;
-        elm_linefeed = true;
-        elm_header = false;
+        elm_echo = 0;
+        elm_space = 1;
+        elm_linefeed = 1;
+        elm_header = 0;
         sprintf_P(btdata2, PSTR("OK\r\n>"));
       }
       else if (!strcmp(btdata1, "ATI"))
@@ -64,10 +71,10 @@ void elmLoop()
       }
       else if (!strcmp(btdata1, "ATZ"))
       { // reset all / general
-        elm_echo = false;
-        elm_space = true;
-        elm_linefeed = true;
-        elm_header = false;
+        elm_echo = 0;
+        elm_space = 1;
+        elm_linefeed = 1;
+        elm_header = 0;
         sprintf_P(btdata2, "%s\r\n>", APPNAME);
       }
       else if (i == 4 && strstr(btdata1, "ATE"))
@@ -107,7 +114,7 @@ void elmLoop()
       else if (!strcmp(btdata1, "ATRV"))
       { // read voltage in float / volts
         // btSerial.print("12.0V\r\n>");
-        sprintf_P(btdata2, PSTR("%.1fV\r\n>"), volt2);
+        // sprintf_P(btdata2, PSTR("%.1fV\r\n>"), volt2);
       }
       // kerpz custom AT cmd
       else if (i == 6 && strstr(btdata1, "ATSHP"))
@@ -236,9 +243,8 @@ void elmLoop()
           }
         }
         else if (strstr(&btdata1[2], "0A"))
-        { // fuel pressure
-          //  btSerial.print("41 0A EF\r\n");
-          byte b = fp / 3;
+        {                                  // fuel pressure 0 - 765 kPa
+          byte b = readFuelPressure() / 3; // 3A
           sprintf_P(btdata2, PSTR("41 0A %02X\r\n>"), b);
         }
         else if (strstr(&btdata1[2], "0B"))
@@ -416,4 +422,7 @@ void elmLoop()
       ++i;
     }
   }
+
+  if (millis() - btTick >= 2000) // bt timeout 2 secs
+    elm_mode = 0;
 }

@@ -11,4 +11,7 @@ extern bool elm_linefeed;
 extern bool elm_header;
 extern uint8_t elm_protocol; // auto
 
+void elmSetup();
+void elmLoop();
+
 #endif
